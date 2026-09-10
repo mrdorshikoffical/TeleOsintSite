@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TeleOsint</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .gradient-bg {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #000000 0%, #3a3a3a 25%, #050505 50%, #2c2c2c 75%, #000000 100%);
+            background-size: 400% 400%;
+            animation: gradientBG 40s ease infinite;
+            z-index: 0;
+        }
+
+        .texture-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyAQMAAAAk8RryAAAABlBMVEUAAAD///+l2Z/dAAAAAnRSTlMAGf56pW0AAABQSURBVBjTY2Bg+P/vP8P//x/+w3///v0DAxMDw38Ghg9g4f///4G5jIyM/xn+MzD8Z2Rg+A/k/wcJ/Iez/v8H8v8zMvxn+M/A8J+RgYHxPwMDw38ACD5f9w2D0gQAAAABJRU5ErkJggg==");
+            background-repeat: repeat;
+            opacity: 0.05; 
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .glass {
+            background: rgba(20, 20, 20, 0.33);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-top: 1px solid rgba(255, 255, 255, 0.4);
+            border-left: 1px solid rgba(255, 255, 255, 0.2);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+
+        #fullscreen-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 15px;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background 0.3s;
+            z-index: 100;
+        }
+        #fullscreen-btn:hover { background: rgba(255, 255, 255, 0.1); }
+
+        .main-content {
+            margin-top: 15vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 50px;
+            z-index: 10;
+        }
+
+        h1 {
+            font-size: 5rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            margin-bottom: 30px;
+            text-shadow: 0 10px 30px rgba(0,0,0,1);
+        }
+
+        button {
+            outline: none;
+            cursor: pointer;
+        }
+
+        .btn-rounded {
+            padding: 15px 40px;
+            border-radius: 50px;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-rounded:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .modal-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            pointer-events: none;
+        }
+
+        /* Окно уменьшено по длине в два раза (было 600px -> стало 300px) */
+        .modal {
+            width: 300px;
+            max-width: 90%;
+            padding: 40px 20px;
+            border-radius: 30px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            pointer-events: auto;
+            opacity: 0;
+            display: none;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 26px;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        .close-btn:hover {
+            opacity: 1;
+            transform: scale(1.2);
+        }
+
+        #link-btn {
+            width: 100%;
+            max-width: 160px;
+            padding: 12px 20px;
+            font-size: 1rem;
+        }
+
+        #link-btn.active-outline {
+            border: 1px solid rgba(255, 255, 255, 0.9) !important;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+        }
+
+        /* Кнопка "Открыть": без прозрачности, скругление 8px, текст по центру, уменьшенная ширина */
+        #open-btn {
+            background: #ffffff !important;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            color: #000000 !important;
+            font-weight: 800;
+            border: 1px solid #ffffff !important;
+            box-shadow: 0 4px 20px 0 rgba(255, 255, 255, 0.2);
+            text-decoration: none;
+            display: none;
+            text-align: center;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            max-width: 160px;
+            padding: 12px 20px;
+            font-size: 1rem;
+            border-radius: 8px !important;
+            transition: all 0.3s ease;
+        }
+        #open-btn:hover {
+            background: #e6e6e6 !important;
+            transform: translateY(-2px);
+        }
+
+        .spring-in {
+            display: flex !important;
+            animation: springIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .spring-out {
+            animation: springOut 0.4s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards;
+        }
+
+        @keyframes springIn {
+            0% { transform: scale(0.6) scaleX(0.5); opacity: 0; }
+            60% { transform: scale(1.05) scaleX(1.05); opacity: 1; }
+            80% { transform: scale(0.95); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes springOut {
+            0% { transform: scale(1); opacity: 1; }
+            40% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(0.6) scaleX(0.5); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="gradient-bg"></div>
+    <div class="texture-overlay"></div>
+
+    <button id="fullscreen-btn" class="glass" title="На весь экран">⛶</button>
+
+    <div class="main-content">
+        <h1>TeleOsint</h1>
+        <button id="main-btn" class="glass btn-rounded">Актуальная ссылка</button>
+    </div>
+
+    <div class="modal-overlay" id="modal-container">
+        <div class="modal glass" id="modal">
+            <button class="close-btn" id="close-btn">&times;</button>
+            <button id="link-btn" class="glass btn-rounded">Ссылка</button>
+            <a href="https://t.me/teleosinterrobot" target="_blank" id="open-btn">Открыть</a>
+        </div>
+    </div>
+
+    <script>
+        const fullscreenBtn = document.getElementById('fullscreen-btn');
+        const mainBtn = document.getElementById('main-btn');
+        const modal = document.getElementById('modal');
+        const closeBtn = document.getElementById('close-btn');
+        const linkBtn = document.getElementById('link-btn');
+        const openBtn = document.getElementById('open-btn');
+
+        fullscreenBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => console.log(err.message));
+            } else {
+                document.exitFullscreen();
+            }
+        });
+
+        function openElement(el) {
+            el.classList.remove('spring-out');
+            el.classList.add('spring-in');
+        }
+
+        function closeElement(el, callback) {
+            el.classList.remove('spring-in');
+            el.classList.add('spring-out');
+            el.addEventListener('animationend', function handler() {
+                el.classList.remove('spring-out');
+                el.style.display = 'none';
+                el.removeEventListener('animationend', handler);
+                if(callback) callback();
+            });
+        }
+
+        mainBtn.addEventListener('click', () => {
+            modal.style.display = 'flex';
+            openElement(modal);
+            linkBtn.classList.remove('active-outline');
+            openBtn.style.display = 'none';
+            openBtn.classList.remove('spring-in', 'spring-out');
+        });
+
+        closeBtn.addEventListener('click', () => closeElement(modal));
+
+        linkBtn.addEventListener('click', () => {
+            linkBtn.classList.add('active-outline');
+            if (openBtn.style.display !== 'flex' && !openBtn.classList.contains('spring-in')) {
+                openBtn.style.display = 'flex';
+                openElement(openBtn);
+            }
+        });
+
+        openBtn.addEventListener('click', () => setTimeout(() => closeElement(modal), 300));
+    </script>
+</body>
+</html>
