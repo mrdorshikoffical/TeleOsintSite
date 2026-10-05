@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5">
+<meta name="theme-color" content="#000000">
+<title>TeleOsint</title>
+<style>
+:root{
+  --fill:rgba(255,255,255,.05);
+  --fill-hover:rgba(255,255,255,.075);
+  --stroke-soft:rgba(255,255,255,.07);
+  --stroke-strong:rgba(255,255,255,.18);
+  --r-xl:52px; --r-md:28px; --r-pill:999px;
+  --spring:cubic-bezier(.34,1.75,.5,1);
+  --spring-soft:cubic-bezier(.2,1.25,.35,1);
+  --spring-10:cubic-bezier(.34,1.4,.64,1);
+  --silver:linear-gradient(105deg,#9a9a9a 0%,#a6a6a6 22%,#b8b8b8 50%,#a6a6a6 78%,#9a9a9a 100%);
+  --silver-soft:linear-gradient(105deg,#929292 0%,#9e9e9e 22%,#aeaeae 50%,#9e9e9e 78%,#929292 100%);
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+  --safe-left:env(safe-area-inset-left,0px);
+  --safe-right:env(safe-area-inset-right,0px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+html,body{background:#000;color:#d8d8d8;font-family:'Inter','Helvetica Neue',Arial,sans-serif;font-weight:900;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:-20%;background:radial-gradient(60% 45% at 20% 15%,rgba(120,120,120,.14),transparent 60%),radial-gradient(55% 45% at 85% 25%,rgba(90,90,90,.10),transparent 65%),radial-gradient(55% 55% at 50% 90%,rgba(140,140,140,.08),transparent 70%);filter:blur(40px);z-index:0;pointer-events:none}
+a{color:inherit;text-decoration:none}
+button,label{font-family:inherit;font-weight:900;cursor:pointer;color:inherit;touch-action:manipulation;outline:none}
+button:focus,button:focus-visible,label:focus{outline:none}
+input{font-family:inherit;font-weight:900;color:inherit}
+.state-input{position:absolute;opacity:0;pointer-events:none;width:0;height:0}
+.grad{background:var(--silver);background-size:340% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:shine 32s linear infinite;filter:blur(.2px)}
+.grad-soft{background:var(--silver-soft);background-size:340% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:shine 40s linear infinite;filter:blur(.25px)}
+@keyframes shine{0%{background-position:300% 0}100%{background-position:-200% 0}}
+.menu-btn{position:fixed;top:calc(20px + var(--safe-top));left:calc(20px + var(--safe-left));z-index:60;width:58px;height:58px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:4px;background:rgba(255,255,255,.05);backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%);border:none;border-left:1px solid var(--stroke-soft);border-radius:24px;-webkit-user-select:none;user-select:none;transition:background .25s ease,border-color .25s ease}
+.menu-btn:hover{background:var(--fill-hover);border-left-color:var(--stroke-strong)}
+.menu-btn span{display:block;width:22px;height:3px;border-radius:0;background:#eaeaea}
+.top-right-controls{position:fixed;top:calc(20px + var(--safe-top));right:calc(20px + var(--safe-right));z-index:60;display:flex;align-items:center;background:rgba(255,255,255,.05);backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%);border:none;border-left:1px solid var(--stroke-soft);border-radius:24px;overflow:hidden;transition:border-color .25s ease;isolation:isolate}
+.top-right-controls:hover{border-left-color:var(--stroke-strong)}
+.ctrl-btn{width:58px;height:58px;display:flex;align-items:center;justify-content:center;background:transparent;border:none;color:#eaeaea;cursor:pointer;transition:background .2s ease;font-family:inherit;border-radius:0;padding:0}
+.ctrl-btn:first-child{border-top-left-radius:24px;border-bottom-left-radius:24px}
+.ctrl-btn:last-child{border-top-right-radius:24px;border-bottom-right-radius:24px}
+.ctrl-btn:hover{background:var(--fill-hover)}
+.ctrl-btn + .ctrl-btn{border-left:1px solid var(--stroke-soft)}
+.ctrl-btn svg{width:24px;height:24px;stroke:#eaeaea;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;display:block}
+.search-panel{position:fixed;top:calc(20px + var(--safe-top));right:calc(148px + var(--safe-right));z-index:59;width:min(420px,calc(100vw - 200px));background:rgba(20,20,20,.55);backdrop-filter:blur(34px) saturate(170%);-webkit-backdrop-filter:blur(34px) saturate(170%);border:none;border-left:1px solid var(--stroke-soft);border-radius:24px;padding:14px;opacity:0;pointer-events:none;transform:translateX(20px);transition:opacity .28s ease, transform .28s var(--spring-soft);display:flex;flex-direction:column;gap:10px;max-height:calc(100vh - 120px)}
+.search-panel.open{opacity:1;pointer-events:auto;transform:translateX(0)}
+.search-head{display:flex;align-items:center;gap:8px}
+.search-input{flex:1;height:44px;padding:0 16px;border-radius:16px;border:1px solid var(--stroke-soft);background:rgba(255,255,255,.04);outline:none;font-size:14px;font-weight:900;color:#e8e8e8;transition:border-color .25s ease, background .25s ease}
+.search-input::placeholder{color:#6a6a6a;font-weight:900}
+.search-input:focus{border-color:var(--stroke-strong);background:rgba(255,255,255,.06)}
+.search-close{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border:none;background:rgba(255,255,255,.04);border-radius:16px;font-size:22px;line-height:1;color:#d8d8d8;transition:background .2s ease}
+.search-close:hover{background:var(--fill-hover)}
+.search-results{display:flex;flex-direction:column;gap:6px;overflow-y:auto;-webkit-overflow-scrolling:touch;max-height:calc(100vh - 220px);padding-right:2px}
+.search-results::-webkit-scrollbar{width:4px}
+.search-results::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
+.search-result{display:block;width:100%;text-align:left;padding:12px 14px;background:rgba(255,255,255,.03);border:none;border-left:1px solid var(--stroke-soft);border-radius:16px;color:#d8d8d8;font-weight:900;cursor:pointer;transition:background .2s ease, border-color .2s ease, transform .25s var(--spring-soft)}
+.search-result:hover{background:var(--fill-hover);border-left-color:var(--stroke-strong);transform:translateX(3px)}
+.search-result .sr-title{display:block;font-size:13px;letter-spacing:.04em;background:var(--silver);background-size:340% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:shine 32s linear infinite;margin-bottom:4px}
+.search-result .sr-snippet{display:block;font-size:11px;color:#7a7a7a;font-weight:900;line-height:1.4;word-break:break-word}
+.search-empty{padding:14px;text-align:center;font-size:12px;color:#7a7a7a;font-style:italic}
+mark.hit{background:rgba(255,255,255,.16);color:#fff;-webkit-text-fill-color:#fff;border-radius:4px;padding:1px 3px;box-shadow:0 0 0 1px rgba(255,255,255,.22) inset;font-weight:900}
+.nav{position:fixed;top:0;left:0;bottom:0;width:min(360px,92vw);z-index:70;background:rgba(255,255,255,.05);backdrop-filter:blur(34px) saturate(170%);-webkit-backdrop-filter:blur(34px) saturate(170%);border:none;border-right:1px solid var(--stroke-soft);transform:translateX(-102%);transition:transform .3s ease;display:flex;flex-direction:column;border-top-right-radius:34px;border-bottom-right-radius:34px;will-change:transform;padding-top:var(--safe-top);padding-bottom:var(--safe-bottom)}
+#navToggle:checked ~ .nav,body.nav-open .nav{transform:translateX(0)}
+.nav-head{display:flex;align-items:center;justify-content:space-between;padding:24px 22px 18px;border-bottom:1px solid var(--stroke-soft)}
+.nav-title{font-size:11px;letter-spacing:.34em;text-transform:uppercase}
+.nav-close{width:38px;height:38px;display:flex;align-items:center;justify-content:center;border:none;background:rgba(255,255,255,.04);border-radius:14px;font-size:24px;line-height:1;color:#d8d8d8;transition:background .2s ease, transform .25s var(--spring)}
+.nav-close:hover{background:var(--fill-hover)}
+.nav-close:active{transform:scale(.94)}
+.nav-list{padding:14px 10px;overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch}
+.nav-item{display:flex;align-items:center;gap:10px;width:100%;padding:14px 16px;font-size:14px;color:#d0d0d0;border-radius:20px;margin:2px 0;cursor:pointer;background:transparent;border:none;text-align:left;transition:background .25s ease,padding-left .55s var(--spring)}
+.nav-item:hover{background:rgba(255,255,255,.07);padding-left:22px}
+.nav-item.current{background:rgba(255,255,255,.09)}
+.nav-item .label{flex:1;min-width:0;word-break:break-word}
+.nav-item .arrow{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;flex-shrink:0;color:#9a9a9a;transition:transform .35s var(--spring),color .25s ease}
+.nav-item .arrow svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;display:block}
+.nav-item.expanded .arrow{transform:rotate(180deg);color:#eaeaea}
+.nav-sub{max-height:0;overflow:hidden;transition:max-height .45s var(--spring-soft);padding:0 6px}
+.nav-sub.open{max-height:900px}
+.nav-sub a{display:block;padding:11px 16px 11px 34px;font-size:13px;color:#a8a8a8;border-radius:16px;margin:2px 0;cursor:pointer;transition:background .25s ease,padding-left .55s var(--spring),color .25s ease}
+.nav-sub a:hover{background:rgba(255,255,255,.06);padding-left:40px;color:#e0e0e0}
+.nav-sub a.current{background:rgba(255,255,255,.09);color:#eaeaea}
+/* Стаггер-анимация пунктов подменю при раскрытии */
+.nav-sub.open a{animation:staggerIn .5s var(--spring-10) both}
+.nav-sub.open a:nth-child(1){animation-delay:.02s}
+.nav-sub.open a:nth-child(2){animation-delay:.06s}
+.nav-sub.open a:nth-child(3){animation-delay:.10s}
+.nav-sub.open a:nth-child(4){animation-delay:.14s}
+.nav-sub.open a:nth-child(5){animation-delay:.18s}
+.nav-sub.open a:nth-child(6){animation-delay:.22s}
+.nav-sub.open a:nth-child(7){animation-delay:.26s}
+.nav-sub.open a:nth-child(8){animation-delay:.30s}
+.nav-sub.open a:nth-child(9){animation-delay:.34s}
+.nav-foot{padding:18px 22px;border-top:1px solid var(--stroke-soft);font-size:10px;letter-spacing:.32em;text-transform:uppercase;color:#5a5a5a}
+.nav-overlay{position:fixed;inset:0;z-index:65;background:rgba(0,0,0,.5);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);opacity:0;pointer-events:none;transition:opacity .3s ease}
+#navToggle:checked ~ .nav-overlay,body.nav-open .nav-overlay{opacity:1;pointer-events:auto}
+body.nav-force-closed .nav{transform:translateX(-102%) !important;transition:transform .3s ease !important}
+body.nav-force-closed .nav-overlay{opacity:0 !important;pointer-events:none !important}
+.page{position:relative;z-index:1;max-width:820px;margin:0 auto;padding:120px 26px 100px;padding-left:calc(26px + var(--safe-left));padding-right:calc(26px + var(--safe-right));padding-bottom:calc(100px + var(--safe-bottom))}
+.head{margin-bottom:44px;animation:headIn .9s var(--spring) both}
+.head .kicker{font-size:10px;letter-spacing:.38em;text-transform:uppercase;margin-bottom:20px}
+.head h1{font-size:42px;letter-spacing:-.022em;line-height:1.05;word-break:break-word}
+.head h1 .at{background:var(--silver-soft);background-size:340% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:shine 40s linear infinite;filter:blur(.25px)}
+.head .meta{margin-top:20px;font-size:12px;letter-spacing:.1em;color:#5a5a5a}
+@keyframes headIn{0%{opacity:0;transform:translateY(20px) scale(.96)}60%{opacity:1;transform:translateY(-4px) scale(1.015)}100%{opacity:1;transform:translateY(0) scale(1)}}
+[data-block]{display:none}
+[data-block].active{display:block}
+.block{position:relative;background:var(--fill);backdrop-filter:blur(28px) saturate(160%);-webkit-backdrop-filter:blur(28px) saturate(160%);border:none;border-left:1px solid var(--stroke-soft);border-radius:var(--r-xl);padding:34px 36px;margin-bottom:26px;animation:blockIn .85s var(--spring) both;overflow-wrap:anywhere}
+.block.active{border-left-color:var(--stroke-strong)}
+@keyframes blockIn{0%{opacity:0;transform:translateY(26px) scale(.94)}55%{opacity:1;transform:translateY(-6px) scale(1.02)}80%{transform:translateY(3px) scale(.995)}100%{opacity:1;transform:translateY(0) scale(1)}}
+.block-head{display:flex;align-items:baseline;gap:14px;margin-bottom:24px;padding-bottom:18px;border-bottom:1px solid var(--stroke-soft);flex-wrap:wrap}
+.block-title{font-size:13px;letter-spacing:.28em;text-transform:uppercase;min-width:0}
+/* Стаггер-анимация 10% пружины поочерёдно для каждого дочернего блока */
+[data-block].active .block > *:not(.block-head):not(ul.plain),
+[data-block].active .block ul.plain > li{
+  animation:staggerIn .55s var(--spring-10) both;
+}
+@keyframes staggerIn{
+  0%{opacity:0;transform:translateY(14px) scale(.975)}
+  100%{opacity:1;transform:translateY(0) scale(1)}
+}
+ul.plain{list-style:none}
+ul.plain li{padding:12px 0;border-bottom:1px solid rgba(255,255,255,.05);display:flex;gap:18px;align-items:baseline;min-width:0;transition:padding-left .55s var(--spring)}
+ul.plain li:hover{padding-left:8px}
+ul.plain li:last-child{border-bottom:none}
+ul.plain .idx{font-size:11px;letter-spacing:.18em;color:#5a5a5a;min-width:26px;flex-shrink:0}
+ul.plain .txt{font-size:15px;word-break:break-word;min-width:0;background:var(--silver-soft);background-size:340% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:shine 40s linear infinite;filter:blur(.25px)}
+.fam-list{margin-top:22px;padding-top:20px;border-top:1px solid var(--stroke-soft)}
+.fam-list:first-child{margin-top:0;padding-top:0;border-top:none}
+.fam-title{font-size:11px;letter-spacing:.28em;text-transform:uppercase;margin-bottom:16px}
+.raw{font-family:'JetBrains Mono','SF Mono',Menlo,Consolas,monospace;font-size:13px;line-height:1.85;white-space:pre-wrap;word-break:break-word;background:rgba(255,255,255,.035);border:none;border-left:1px solid var(--stroke-soft);border-radius:var(--r-md);padding:26px 28px;color:#b4b4b4;overflow-wrap:anywhere}
+.raw .h{background:var(--silver);background-size:340% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:shine 32s linear infinite}
+.raw .cmd{color:#9a9a9a}
+.footer{margin-top:56px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px;font-size:10px;letter-spacing:.32em;text-transform:uppercase;color:#4a4a4a}
+.hero-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center}
+.hero-wrap h1{font-size:5rem;font-weight:900;letter-spacing:2px;text-shadow:0 10px 30px rgba(0,0,0,1);margin-bottom:30px;line-height:1}
+.btn-rounded{padding:15px 40px;border-radius:50px;color:white;font-size:1.1rem;font-weight:900;transition:all .3s ease;outline:none;cursor:pointer;background:var(--fill);backdrop-filter:blur(28px) saturate(160%);-webkit-backdrop-filter:blur(28px) saturate(160%);border:none;border-left:1px solid var(--stroke-soft)}
+.btn-rounded:hover{background:rgba(255,255,255,.15);transform:translateY(-2px);border-left-color:var(--stroke-strong)}
+.modal-overlay{position:fixed;inset:0;z-index:200;display:none;justify-content:center;align-items:center;pointer-events:none;padding:20px}
+.modal-overlay.show{display:flex}
+.modal{width:300px;max-width:90%;padding:40px 20px;border-radius:30px;position:relative;display:none;flex-direction:column;align-items:center;gap:15px;pointer-events:auto;opacity:0;background:rgba(20,20,20,.55);backdrop-filter:blur(34px) saturate(170%);-webkit-backdrop-filter:blur(34px) saturate(170%);border:none;border-left:1px solid var(--stroke-soft)}
+.close-btn{position:absolute;top:10px;right:15px;background:none;border:none;color:white;font-size:26px;cursor:pointer;opacity:.7;transition:opacity .3s, transform .3s;padding:0;line-height:1;font-family:inherit}
+.close-btn:hover{opacity:1;transform:scale(1.2)}
+#link-btn{width:100%;max-width:160px;padding:12px 20px;font-size:1rem}
+#link-btn.active-outline{border:1px solid rgba(255,255,255,.9) !important;box-shadow:0 0 15px rgba(255,255,255,.2)}
+#open-btn{background:#ffffff !important;backdrop-filter:none;-webkit-backdrop-filter:none;color:#000000 !important;font-weight:800;border:1px solid #ffffff !important;box-shadow:0 4px 20px 0 rgba(255,255,255,.2);text-decoration:none;display:none;text-align:center;justify-content:center;align-items:center;width:100%;max-width:160px;padding:12px 20px;font-size:1rem;border-radius:8px !important;transition:all .3s ease}
+#open-btn:hover{background:#e6e6e6 !important;transform:translateY(-2px)}
+.spring-in{display:flex !important;animation:springIn .6s cubic-bezier(.175,.885,.32,1.275) forwards}
+.spring-out{animation:springOut .4s cubic-bezier(.6,-.28,.735,.045) forwards}
+@keyframes springIn{0%{transform:scale(.6) scaleX(.5);opacity:0}60%{transform:scale(1.05) scaleX(1.05);opacity:1}80%{transform:scale(.95);opacity:1}100%{transform:scale(1);opacity:1}}
+@keyframes springOut{0%{transform:scale(1);opacity:1}40%{transform:scale(1.05);opacity:1}100%{transform:scale(.6) scaleX(.5);opacity:0}}
+@media (max-width:900px){.page{padding:110px 22px 90px}.head h1{font-size:36px}.block{padding:30px;border-radius:44px}.hero-wrap h1{font-size:3.5rem}}
+@media (max-width:640px){
+  html,body{font-size:14px}
+  .page{padding:96px 16px 70px;padding-top:calc(96px + var(--safe-top));padding-bottom:calc(70px + var(--safe-bottom));padding-left:calc(16px + var(--safe-left));padding-right:calc(16px + var(--safe-right))}
+  .head{margin-bottom:30px}.head h1{font-size:26px}
+  .block{padding:22px 20px;border-radius:32px;margin-bottom:20px}
+  ul.plain li{gap:12px;padding:10px 0}ul.plain .txt{font-size:14px}
+  .raw{font-size:11px;padding:18px 16px;border-radius:22px}
+  .menu-btn{width:52px;height:52px;top:calc(16px + var(--safe-top));left:calc(16px + var(--safe-left));border-radius:20px}
+  .top-right-controls{top:calc(16px + var(--safe-top));right:calc(16px + var(--safe-right));border-radius:20px}
+  .ctrl-btn{width:52px;height:52px}
+  .ctrl-btn:first-child{border-top-left-radius:20px;border-bottom-left-radius:20px}
+  .ctrl-btn:last-child{border-top-right-radius:20px;border-bottom-right-radius:20px}
+  .search-panel{top:calc(78px + var(--safe-top));right:calc(16px + var(--safe-right));left:calc(16px + var(--safe-left));width:auto;max-width:none;border-radius:20px}
+  .nav{width:min(340px,88vw)}
+  .hero-wrap h1{font-size:2.6rem}
+  .hero-wrap{min-height:50vh}
+}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important}}
+</style>
+</head>
+<body>
+
+<input type="checkbox" id="navToggle" class="state-input" hidden>
+<label for="navToggle" class="menu-btn" aria-label="Меню"><span></span><span></span><span></span></label>
+<label for="navToggle" class="nav-overlay" aria-hidden="true"></label>
+
+<div class="top-right-controls">
+  <button class="ctrl-btn" id="searchBtn" aria-label="Поиск">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+  </button>
+  <button class="ctrl-btn" id="fsBtn" aria-label="Полный экран">
+    <svg id="fsIcon" viewBox="0 0 24 24"><path d="M4 9V4h5M20 15v5h-5M15 4h5v5M9 20H4v-5"/></svg>
+  </button>
+</div>
+
+<div class="search-panel" id="searchPanel" aria-hidden="true">
+  <div class="search-head">
+    <input class="search-input" id="searchInput" type="text" placeholder="Поиск по договору..." autocomplete="off">
+    <button class="search-close" id="searchClose" aria-label="Закрыть">&times;</button>
+  </div>
+  <div class="search-results" id="searchResults"></div>
+</div>
+
+<aside class="nav" id="nav">
+  <div class="nav-head">
+    <div class="nav-title grad">Навигация</div>
+    <button class="nav-close" id="navClose" aria-label="Закрыть">&times;</button>
+  </div>
+  <nav class="nav-list" id="navList">
+    <button class="nav-item" data-goto="home" type="button">
+      <span class="label grad">Ссылка</span>
+    </button>
+
+    <button class="nav-item" id="contractToggle" type="button">
+      <span class="label grad">Договор для модераторов</span>
+      <span class="arrow"><svg viewBox="0 0 24 24"><path d="M6 15 L12 9 L18 15"/></svg></span>
+    </button>
+
+    <div class="nav-sub" id="contractSub">
+      <a href="#" data-goto="s01"><span class="grad">Главная</span></a>
+      <a href="#" data-goto="s02"><span class="grad">1. Обязанности</span></a>
+      <a href="#" data-goto="s03"><span class="grad">2. Порядок работы</span></a>
+      <a href="#" data-goto="s04"><span class="grad">3. Подробности</span></a>
+      <a href="#" data-goto="s05"><span class="grad">4. Вознаграждение</span></a>
+      <a href="#" data-goto="s06"><span class="grad">5. Срок действия</span></a>
+      <a href="#" data-goto="s07"><span class="grad">6. Прочее</span></a>
+      <a href="#" data-goto="s08"><span class="grad">Блок 1 · Команды</span></a>
+      <a href="#" data-goto="s09"><span class="grad">Согласие</span></a>
+    </div>
+  </nav>
+  <div class="nav-foot">TeleOsint</div>
+</aside>
+
+<main class="page">
+  <header class="head" id="pageHead">
+    <div class="kicker grad">TeleOsint</div>
+    <h1><span class="grad">TeleOsint</span></h1>
+    <div class="meta">Официальный доступ</div>
+  </header>
+
+  <section id="home" class="block active" data-block>
+    <div class="block-head"><span class="block-title grad">Главная</span></div>
+    <div class="hero-wrap">
+      <h1 class="grad">TeleOsint</h1>
+      <button id="mainBtn" class="btn-rounded">Актуальная ссылка</button>
+    </div>
+  </section>
+
+  <section id="s01" class="block" data-block>
+    <div class="block-head"><span class="block-title grad">Главная</span></div>
+    <p style="font-size:16px;color:#d0d0d0;line-height:1.7;margin-bottom:14px">📄 СОГЛАШЕНИЕ О СОТРУДНИЧЕСТВЕ</p>
+    <p style="font-size:14px;color:#9a9a9a;line-height:1.7">Модератор-тестировщик проекта TeleOsint</p>
+    <p style="font-size:14px;color:#9a9a9a;line-height:1.7;margin-top:20px">Выберите раздел в меню слева, чтобы ознакомиться с пунктами соглашения, списком команд и условиями сотрудничества.</p>
+  </section>
+
+  <section id="s02" class="block" data-block>
+    <div class="block-head"><span class="block-title grad">1. Обязанности модератора</span></div>
+    <ul class="plain">
+      <li><span class="idx">1.1</span><span class="txt">Выполнять тестовые задания, поступающие от Владельца, в оговорённые сроки.</span></li>
+      <li><span class="idx">1.2</span><span class="txt">Проверять весь указанный в задании функционал, а не выборочно.</span></li>
+      <li><span class="idx">1.3</span><span class="txt">Сообщать о результатах тестирования.</span></li>
+      <li><span class="idx">1.4</span><span class="txt">Указывать: что работает корректно; что работает некорректно; что работает нестабильно (иногда да, иногда нет).</span></li>
+      <li><span class="idx">1.5</span><span class="txt">Прикладывать скриншоты или видео для подтверждения багов, если потребуется.</span></li>
+      <li><span class="idx">1.6</span><span class="txt">Не разглашать третьим лицам: внутреннее устройство бота; тестовые функции, не выпущенные в релиз; личные данные пользователей; содержание переписки с Владельцем.</span></li>
+      <li><span class="idx">1.7</span><span class="txt">Не передавать свой аккаунт, тестовый доступ и скриншоты кому-либо.</span></li>
+      <li><span class="idx">1.8</span><span class="txt">Сообщать о багах только администрации/модерации бота.</span></li>
+      <li><span class="idx">1.9</span><span class="txt">Не использовать тестовый доступ для ломания бота, целей, не связанных с тестированием.</span></li>
+    </ul>
+  </section>
+
+  <section id="s03" class="block" data-block>
+    <div class="block-head"><span class="block-title grad">2. Порядок работы</span></div>
+    <ul class="plain">
+      <li><span class="idx">2.1</span><span class="txt">Владелец направляет Модератору задание.</span></li>
+      <li><span class="idx">2.2</span><span class="txt">Модератор выполняет тестирование в указанные сроки.</span></li>
+      <li><span class="idx">2.3</span><span class="txt">Модератор отправляет отчёт. Если что-то неисправно — рассказывает, если всё работает хорошо — так и пишет.</span></li>
+      <li><span class="idx">2.4</span><span class="txt">После устранения бага задание может быть выдано повторно для проверки.</span></li>
+    </ul>
+  </section>
+
+  <section id="s04" class="block" data-block>
+    <div class="block-head"><span class="block-title grad">3. Подробности</span></div>
+    <ul class="plain">
+      <li><span class="idx">3.1</span><span class="txt">Вся информация, полученная в рамках сотрудничества, считается конфиденциальной.</span></li>
+      <li><span class="idx">3.2</span><span class="txt">Запрещается публиковать баги, скриншоты и любые материалы в открытых источниках без разрешения Владельца.</span></li>
+      <li><span class="idx">3.3</span><span class="txt">При нарушении конфиденциальности Модератор исключается из команды и блокируется в боте без права восстановления.</span></li>
+    </ul>
+  </section>
+
+  <section id="s05" class="block" data-block>
+    <div class="block-head"><span class="block-title grad">4. Вознаграждение</span></div>
+    <ul class="plain">
+      <li><span class="idx">4.1</span><span class="txt">Каждый модератор получает расширенный доступ к боту, подробно описано в БЛОКЕ 1.</span></li>
+    </ul>
+  </section>
+
+  <section id="s06" class="block" data-block>
+    <div class="block-head"><span class="block-title grad">5. Срок действия и расторжение</span></div>
+    <ul class="plain">
+      <li><span class="idx">5.1</span><span class="txt">Соглашение действует до прекращения работы.</span></li>
+      <li><span class="idx">5.2</span><span class="txt">Любая сторона вправе расторгнуть соглашение в любой момент, уведомив другую сторону.</span></li>
+      <li><span class="idx">5.3</span><span class="txt">При расторжении Модератор: удаляет все тестовые данные; не использует полученную информацию в дальнейшем; не передаёт материалы третьим лицам.</span></li>
+    </ul>
+  </section>
+
+  <section id="s07" class="block" data-block>
+    <div class="block-head"><span class="block-title grad">6. Прочее</span></div>
+    <ul class="plain">
+      <li><span class="idx">6.1</span><span class="txt">Все спорные ситуации решаются путём переговоров в Telegram.</span></li>
+      <li><span class="idx">6.2</span><span class="txt">Изменения в соглашение вносятся по обоюдному согласию.</span></li>
+      <li><span class="idx">6.3</span><span class="txt">Подтверждение соглашения — сообщение Модератора «Согласен» в ответ на отправленный текст.</span></li>
+    </ul>
+  </section>
+
+  <section id="s08" class="block" data-block>
+    <div class="block-head"><span class="block-title grad">Блок 1 · Команды</span></div>
+    <p style="font-size:14px;color:#c0c0c0;line-height:1.7;margin-bottom:14px">Все модераторы делятся на 2 группы:</p>
+    <ul class="plain">
+      <li><span class="idx">—</span><span class="txt">Главные модераторы</span></li>
+      <li><span class="idx">—</span><span class="txt">Модераторы</span></li>
+    </ul>
+    <p style="font-size:14px;color:#c0c0c0;line-height:1.7;margin:20px 0">Главные модераторы получают 5% от прибыли бота, если он набирает более 1000⭐️ на балансе. Вся прибыль выдаётся округлённо, подарками Telegram/Telegram Payment.</p>
+
+    <div class="fam-list">
+      <div class="fam-title grad-soft">Список команд, доступных Главным модераторам</div>
+      <div class="raw"><span class="h">📋 Информация:</span>
+<span class="cmd">.info [user] - инфо о пользователе
+.stats - статистика за день
+.overstats - статистика за всё время
+.top - топ пользователей
+.admins - список админов</span>
+
+<span class="h">📢 Объявление о подписке на канал:</span>
+<span class="cmd">.ad / .adedit [текст] / .addel / .adcreate [текст]</span>
+
+<span class="h">🔨 Модерация:</span>
+<span class="cmd">.ban [user] / .unban [user] - бан/разбан
+.saveuser [user] / .antiuser [user] - сделать анонимным
+.clearuser [user] - очистить от подписок</span>
+
+<span class="h">💰 Запросы:</span>
+<span class="cmd">.add [кол-во] [search/snos/freeze/spam/mnp/ip/pro] [user] - выдача запросов</span>
+
+<span class="h">🔄 Обновление лимитов:</span>
+<span class="cmd">.upnow [search/snos/mnp/ip/pro] [user] - обновляет лимиты 24/7 запросов по выбранному типу
+.upnowall [search/snos/mnp/ip/pro] - обновляет запросы всех типов функций</span>
+
+<span class="h">🔑 Промокоды:</span>
+<span class="cmd">.addpromo [номер] [код] [тип] [значение] [активации]
+.delpromo [код]
+.promo</span>
+
+<span class="h">🎁 Подписки:</span>
+<span class="cmd">.give 'ANON' / 'VIP' / 'ANON+VIP' [user] - выдача
+.giveoff 'ANON' / 'VIP' / 'ANON+VIP' [user] - снятие</span>
+
+<span class="h">✉️ Сообщения:</span>
+<span class="cmd">.send [user] [текст] - отправить сообщение в чат бота</span>
+
+<span class="h">🧪 Тест:</span>
+<span class="cmd">.test on / off / 'ANON' / 'VIP' / 'ANON+VIP' - протестировать режим подписки/стать обычным пользователем для теста</span>
+
+<span class="h">🔍 Диагностика:</span>
+<span class="cmd">.session - статус сессии
+.bd - диагностика БД и канала
+.bdid - ID канала бэкапа
+.bdrestore - полное восстановление из Telegram + GitHub
+.channels - ID каналов VIP/ANON</span>
+
+<span class="h">🐙 GitHub backup:</span>
+<span class="cmd">.ghinfo / .ghsave / .ghload / .ghmigrate</span>
+
+<span class="h">📊 Списки:</span>
+<span class="cmd">.users</span></div>
+    </div>
+
+    <div class="fam-list">
+      <div class="fam-title grad-soft">Список команд, доступных Модераторам</div>
+      <div class="raw"><span class="h">📋 Информация:</span>
+<span class="cmd">.info [user] - инфо о пользователе
+.stats - статистика за день
+.overstats - статистика за всё время
+.top - топ пользователей
+.admins - список админов</span>
+
+<span class="h">📢 Объявление о подписке на канал:</span>
+<span class="cmd">.ad / .adedit [текст] / .addel / .adcreate [текст]</span>
+
+<span class="h">🔨 Модерация:</span>
+<span class="cmd">.ban [user] / .unban [user] - бан/разбан
+.saveuser [user] / .antiuser [user] - сделать анонимным
+.clearuser [user] - очистить от подписок</span>
+
+<span class="h">💰 Запросы:</span>
+<span class="cmd">.add [кол-во] [search/snos/freeze/spam/mnp/ip/pro] [user] - выдача запросов</span>
+
+<span class="h">✉️ Сообщения:</span>
+<span class="cmd">.send [user] [текст] - отправить сообщение в чат бота</span>
+
+<span class="h">🧪 Тест:</span>
+<span class="cmd">.test on / off / 'ANON' / 'VIP' / 'ANON+VIP' - протестировать режим подписки/стать обычным пользователем для теста</span>
+
+<span class="h">📊 Списки:</span>
+<span class="cmd">.users</span></div>
+    </div>
+
+    <p style="font-size:14px;color:#c0c0c0;line-height:1.7;margin-top:20px">Все команды вводятся прямо в чат бота через ".".</p>
+    <p style="font-size:14px;color:#c0c0c0;line-height:1.7;margin-top:12px">Об повышении должности владелец скажет сам. Всё, что нужно — просто получить доверие.</p>
+  </section>
+
+  <section id="s09" class="block" data-block>
+    <div class="block-head"><span class="block-title grad">Согласие</span></div>
+    <p style="font-size:15px;color:#c8c8c8;line-height:1.8">Становясь модератором любой группы, вы автоматически соглашаетесь на все пункты договора. В случае критических невыполнений вы можете получить предупреждение, получить понижение группы, снятие с должности, внесение в чёрный список бота.</p>
+  </section>
+
+  <footer class="footer">
+    <span>TeleOsint</span>
+    <span>Agreement</span>
+  </footer>
+</main>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modal">
+    <button class="close-btn" id="closeBtn">&times;</button>
+    <button id="linkBtn" class="btn-rounded">Ссылка</button>
+    <a href="https://t.me/teleosinterrobot" target="_blank" rel="noopener" id="openBtn">Открыть</a>
+  </div>
+</div>
+
+<script>
+(function(){
+  var navToggle=document.getElementById('navToggle');
+  var navClose=document.getElementById('navClose');
+  var contractToggle=document.getElementById('contractToggle');
+  var contractSub=document.getElementById('contractSub');
+  var pageHead=document.getElementById('pageHead');
+  var blocks=document.querySelectorAll('[data-block]');
+  /* Все кликабельные элементы навигации (главные + подпункты) */
+  var navClickable=document.querySelectorAll('.nav-item[data-goto], .nav-sub a[data-goto]');
+
+  function setNavOpen(open){
+    if(open){document.body.classList.add('nav-open');document.body.classList.remove('nav-force-closed');if(navToggle)navToggle.checked=true}
+    else{document.body.classList.remove('nav-open');if(navToggle)navToggle.checked=false;document.body.classList.add('nav-force-closed');setTimeout(function(){document.body.classList.remove('nav-force-closed')},350)}
+  }
+  if(navToggle){navToggle.addEventListener('change',function(){if(navToggle.checked){document.body.classList.add('nav-open');document.body.classList.remove('nav-force-closed')}else{document.body.classList.remove('nav-open')}})}
+  var overlay=document.querySelector('.nav-overlay');
+  if(overlay){overlay.addEventListener('click',function(){setNavOpen(false)})}
+  if(navClose){navClose.addEventListener('click',function(){setNavOpen(false)})}
+
+  if(contractToggle){
+    contractToggle.addEventListener('click',function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      var isOpen=contractSub.classList.contains('open');
+      if(isOpen){contractSub.classList.remove('open');contractToggle.classList.remove('expanded')}
+      else{contractSub.classList.add('open');contractToggle.classList.add('expanded')}
+    });
+  }
+
+  /* Обновление .current — только на кликабельных элементах навигации */
+  function setCurrent(id){
+    navClickable.forEach(function(el){
+      var match=el.getAttribute('data-goto')===id;
+      el.classList.toggle('current',match);
+    });
+  }
+
+  function updateHeadByBlock(id){
+    if(!pageHead)return;
+    var kicker=pageHead.querySelector('.kicker');
+    var h1=pageHead.querySelector('h1');
+    var meta=pageHead.querySelector('.meta');
+    if(id==='home'){
+      if(kicker)kicker.textContent='TeleOsint';
+      if(h1)h1.innerHTML='<span class="grad">TeleOsint</span>';
+      if(meta)meta.textContent='Официальный доступ';
+    } else if(id==='s01'){
+      if(kicker)kicker.textContent='Соглашение · TeleOsint';
+      if(h1)h1.innerHTML='<span class="grad">TeleOsint</span>';
+      if(meta)meta.textContent='Модератор-тестировщик проекта TeleOsint';
+    } else {
+      var target=document.getElementById(id);
+      if(target){
+        var titleEl=target.querySelector('.block-title');
+        var t=titleEl?titleEl.textContent.trim():id;
+        if(kicker)kicker.textContent='Договор · TeleOsint';
+        if(h1)h1.innerHTML='<span class="grad">'+t+'</span>';
+        if(meta)meta.textContent='Модератор-тестировщик';
+      }
+    }
+  }
+
+  /* Поочерёдная пружинная (10%) анимация на каждый дочерний блок */
+  function runStagger(id){
+    var activeBlock=document.getElementById(id);
+    if(!activeBlock)return;
+    var contentBlock=activeBlock.querySelector('.block') || activeBlock;
+    var items=[];
+    Array.prototype.forEach.call(contentBlock.children,function(c){
+      if(c.classList.contains('block-head'))return;
+      if(c.tagName==='UL' && c.classList.contains('plain')){
+        Array.prototype.forEach.call(c.children,function(li){items.push(li)});
+      } else {
+        items.push(c);
+      }
+    });
+    items.forEach(function(el,i){
+      el.style.animation='none';
+      void el.offsetWidth;
+      el.style.animation='';
+      el.style.animationDelay=(i*0.06)+'s';
+    });
+  }
+
+  function showBlock(id){
+    blocks.forEach(function(b){
+      b.classList.remove('active');void b.offsetWidth;
+      if(b.id===id){b.classList.add('active');var inner=b.querySelector('.block');if(inner){inner.style.animation='none';void inner.offsetWidth;inner.style.animation=''}}
+    });
+    setCurrent(id);
+    updateHeadByBlock(id);
+    runStagger(id);
+  }
+  function scrollToBlock(id, smooth){
+    var el=document.getElementById(id);
+    if(!el)return;
+    try{el.scrollIntoView({behavior:smooth===false?'auto':'smooth',block:'start'})}catch(e){window.scrollTo(0,el.offsetTop-20)}
+  }
+
+  navClickable.forEach(function(a){
+    var handler=function(e){
+      if(e){e.preventDefault();e.stopPropagation()}
+      var id=a.getAttribute('data-goto');
+      if(!id)return;
+      showBlock(id);
+      setNavOpen(false);
+      setTimeout(function(){scrollToBlock(id,true)},30);
+    };
+    a.addEventListener('click',handler);
+  });
+
+  /* Стартовое выделение — «Ссылка» (home) */
+  setCurrent('home');
+
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'){setNavOpen(false);closeSearch();closeModal()}});
+
+  var searchBtn=document.getElementById('searchBtn');
+  var searchPanel=document.getElementById('searchPanel');
+  var searchInput=document.getElementById('searchInput');
+  var searchCloseBtn=document.getElementById('searchClose');
+  var searchResults=document.getElementById('searchResults');
+
+  function openSearch(){
+    searchPanel.classList.add('open');
+    searchPanel.setAttribute('aria-hidden','false');
+    setTimeout(function(){try{searchInput.focus()}catch(e){}},60);
+  }
+  function closeSearch(){
+    searchPanel.classList.remove('open');
+    searchPanel.setAttribute('aria-hidden','true');
+  }
+  if(searchBtn){searchBtn.addEventListener('click',function(e){e.stopPropagation();searchPanel.classList.contains('open')?closeSearch():openSearch()})}
+  if(searchCloseBtn){searchCloseBtn.addEventListener('click',function(e){e.stopPropagation();closeSearch()})}
+
+  var fsBtn=document.getElementById('fsBtn');
+  var fsIcon=document.getElementById('fsIcon');
+  var ICON_ENTER='<path d="M4 9V4h5M20 15v5h-5M15 4h5v5M9 20H4v-5"/>';
+  var ICON_EXIT='<path d="M9 4v5H4M15 20v-5h5M20 9h-5V4M4 15h5v5"/>';
+  function updateFsIcon(){if(fsIcon){fsIcon.innerHTML=document.fullscreenElement?ICON_EXIT:ICON_ENTER}}
+  if(fsBtn){
+    fsBtn.addEventListener('click',function(e){
+      e.stopPropagation();
+      if(!document.fullscreenElement){
+        var el=document.documentElement;
+        if(el.requestFullscreen)el.requestFullscreen();
+        else if(el.webkitRequestFullscreen)el.webkitRequestFullscreen();
+        else if(el.msRequestFullscreen)el.msRequestFullscreen();
+      } else {
+        if(document.exitFullscreen)document.exitFullscreen();
+        else if(document.webkitExitFullscreen)document.webkitExitFullscreen();
+        else if(document.msExitFullscreen)document.msExitFullscreen();
+      }
+    });
+    document.addEventListener('fullscreenchange',updateFsIcon);
+    document.addEventListener('webkitfullscreenchange',updateFsIcon);
+    document.addEventListener('msfullscreenchange',updateFsIcon);
+    updateFsIcon();
+  }
+
+  document.addEventListener('click',function(e){
+    if(!searchPanel.classList.contains('open'))return;
+    if(searchPanel.contains(e.target))return;
+    if(searchBtn&&searchBtn.contains(e.target))return;
+    if(fsBtn&&fsBtn.contains(e.target))return;
+    closeSearch();
+  });
+
+  function clearMarks(){
+    document.querySelectorAll('mark.hit').forEach(function(m){
+      var parent=m.parentNode;
+      while(m.firstChild)parent.insertBefore(m.firstChild,m);
+      parent.removeChild(m);
+      parent.normalize();
+    });
+  }
+  function highlightIn(container, query){
+    if(!query)return 0;
+    var lower=query.toLowerCase();
+    var count=0;
+    var walker=document.createTreeWalker(container,NodeFilter.SHOW_TEXT,null);
+    var nodes=[];
+    while(walker.nextNode())nodes.push(walker.currentNode);
+    nodes.forEach(function(node){
+      var text=node.nodeValue;
+      if(!text)return;
+      var idx=text.toLowerCase().indexOf(lower);
+      if(idx<0)return;
+      var frag=document.createDocumentFragment();
+      var pos=0;
+      while(idx>=0){
+        if(idx>pos)frag.appendChild(document.createTextNode(text.substring(pos,idx)));
+        var mark=document.createElement('mark');
+        mark.className='hit';
+        mark.textContent=text.substring(idx,idx+query.length);
+        frag.appendChild(mark);
+        count++;
+        pos=idx+query.length;
+        idx=text.toLowerCase().indexOf(lower,pos);
+      }
+      if(pos<text.length)frag.appendChild(document.createTextNode(text.substring(pos)));
+      node.parentNode.replaceChild(frag,node);
+    });
+    return count;
+  }
+  function buildIndex(){
+    var items=[];
+    blocks.forEach(function(b){
+      var inner=b.querySelector('.block')||b;
+      var titleEl=b.querySelector('.block-title');
+      var title=titleEl?titleEl.textContent.trim():b.id;
+      items.push({id:b.id,title:title,el:inner,text:(inner.textContent||'').toLowerCase()});
+    });
+    return items;
+  }
+  var SEARCH_INDEX=buildIndex();
+
+  function doSearch(q){
+    clearMarks();
+    var query=(q||'').trim();
+    if(query.length<2){searchResults.innerHTML='';return}
+    var lower=query.toLowerCase();
+    var matches=[];
+    SEARCH_INDEX.forEach(function(item){
+      var idx=item.text.indexOf(lower);
+      if(idx<0)return;
+      var total=0;var p=0;
+      while((p=item.text.indexOf(lower,p))>=0){total++;p+=lower.length}
+      var start=Math.max(0,idx-40);
+      var end=Math.min(item.text.length,idx+query.length+50);
+      var snippet=item.text.substring(start,end);
+      matches.push({id:item.id,title:item.title,snippet:snippet,total:total});
+    });
+    if(!matches.length){
+      searchResults.innerHTML='<div class="search-empty">Ничего не найдено</div>';
+      return;
+    }
+    var html='';
+    matches.forEach(function(m){
+      html+='<button class="search-result" data-goto="'+m.id+'">'
+        +'<span class="sr-title">'+m.title+(m.total>1?' · '+m.total+' совпадений':'')+'</span>'
+        +'<span class="sr-snippet">…'+m.snippet.replace(/</g,'&lt;')+'…</span>'
+        +'</button>';
+    });
+    searchResults.innerHTML=html;
+    searchResults.querySelectorAll('.search-result').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        var id=btn.getAttribute('data-goto');
+        showBlock(id);
+        closeSearch();
+        var el=document.getElementById(id);
+        if(el){
+          highlightIn(el, query);
+          setTimeout(function(){scrollToBlock(id,true)},40);
+        }
+      });
+    });
+  }
+  var searchTimer;
+  if(searchInput){
+    searchInput.addEventListener('input',function(){
+      clearTimeout(searchTimer);
+      searchTimer=setTimeout(function(){doSearch(searchInput.value)},180);
+    });
+    searchInput.addEventListener('keydown',function(e){
+      if(e.key==='Enter'){
+        var first=searchResults.querySelector('.search-result');
+        if(first)first.click();
+      }
+    });
+  }
+
+  var mainBtn=document.getElementById('mainBtn');
+  var modalOverlay=document.getElementById('modalOverlay');
+  var modal=document.getElementById('modal');
+  var closeBtn=document.getElementById('closeBtn');
+  var linkBtn=document.getElementById('linkBtn');
+  var openBtn=document.getElementById('openBtn');
+
+  function openElement(el){
+    el.classList.remove('spring-out');
+    el.classList.add('spring-in');
+  }
+  function closeElement(el, callback){
+    el.classList.remove('spring-in');
+    el.classList.add('spring-out');
+    el.addEventListener('animationend', function handler(){
+      el.classList.remove('spring-out');
+      el.style.display='none';
+      el.removeEventListener('animationend',handler);
+      if(callback)callback();
+    });
+  }
+  function openModal(){
+    modalOverlay.classList.add('show');
+    modal.style.display='flex';
+    openElement(modal);
+    linkBtn.classList.remove('active-outline');
+    openBtn.style.display='none';
+    openBtn.classList.remove('spring-in','spring-out');
+  }
+  function closeModal(){
+    if(!modalOverlay.classList.contains('show'))return;
+    closeElement(modal, function(){
+      modalOverlay.classList.remove('show');
+    });
+  }
+  if(mainBtn){mainBtn.addEventListener('click',function(e){e.stopPropagation();openModal()})}
+  if(closeBtn){closeBtn.addEventListener('click',function(e){e.stopPropagation();closeModal()})}
+  if(modalOverlay){
+    modalOverlay.addEventListener('click',function(e){
+      if(e.target===modalOverlay)closeModal();
+    });
+  }
+  if(linkBtn){
+    linkBtn.addEventListener('click',function(e){
+      e.stopPropagation();
+      linkBtn.classList.add('active-outline');
+      if(openBtn.style.display!=='flex' && !openBtn.classList.contains('spring-in')){
+        openBtn.style.display='flex';
+        openElement(openBtn);
+      }
+    });
+  }
+  if(openBtn){
+    openBtn.addEventListener('click',function(){setTimeout(closeModal,300)});
+  }
+})();
+</script>
+</body>
+  </html>
