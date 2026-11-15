@@ -256,6 +256,26 @@ html[data-mode=light] .card,html[data-mode=light] .glass,html[data-mode=light] .
 html[data-mode=light] .search{box-shadow:0 18px 50px rgba(0,0,0,.1)}
 html[data-mode=light] .btn{box-shadow:0 8px 28px rgba(0,0,0,.08),inset 0 1px 0 rgba(255,255,255,.7)}
 html[data-mode=light] .card::after{background:radial-gradient(90% 60% at 0% 0%,rgba(255,255,255,.5),transparent 60%)}
+#pm{z-index:400}
+#pm .modal{width:320px}
+#pm .al-t{font-size:12.5px;line-height:1.6;padding:8px 6px 0}
+@keyframes letterL{0%{opacity:0;transform:translateY(36px)}100%{opacity:1;transform:none}}
+body.lite *,body.lite *::before,body.lite *::after{filter:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+body.lite .orb,body.lite .noise,body.lite .spot{display:none}
+body.lite .bg{background:radial-gradient(60% 45% at 20% 8%,rgba(var(--fg),.09),transparent 65%),radial-gradient(50% 40% at 85% 85%,rgba(var(--fg),.06),transparent 70%)}
+body.lite .grad{animation:none;background-position:60% 0}
+body.lite .big span{animation:letterL .8s var(--ease) both;animation-delay:calc(var(--k)*.05s)}
+body.lite .card,body.lite .glass,body.lite .nav,body.lite .search,body.lite .modal,body.lite .btn{background:var(--fill),color-mix(in srgb,var(--pnc) 92%,transparent)}
+body.lite .mo{background:color-mix(in srgb,var(--bg) 70%,transparent)}
+body.lite .ov{background:color-mix(in srgb,var(--bg) 70%,transparent)}
+body.lite .card::before,body.lite .card::after{display:none}
+body.lite [data-block].active .card{animation:inBlur2 .5s var(--ease) both}
+body.lite .card{will-change:auto}
+#boostBtn:hover{transform:none}
+#boostBtn:active{transform:scale(.92)}
+#boostBtn svg{transition:fill .3s,stroke .3s,transform .5s var(--spring)}
+#boostBtn.on{background:var(--fill-h)}
+#boostBtn.on svg{transform:scale(1.12);fill:var(--acc);stroke:var(--acc)}
 @media (hover:none){.spot{display:none}.card{filter:none!important}}
 @media (max-width:640px){
   html{-webkit-text-size-adjust:100%}
@@ -300,7 +320,7 @@ html[data-mode=light] .card::after{background:radial-gradient(90% 60% at 0% 0%,r
 
 <div class="ov" id="ov"></div>
 <aside class="nav" id="nav">
-  <div class="nav-head"><div class="nav-title grad">Навигация</div><div class="nav-btns"><button class="nav-x" id="setBtn" aria-label="Настройки"><svg viewBox="0 0 24 24" class="fill"><path fill-rule="evenodd" d="M15 12a3 3 0 1 0-6 0 3 3 0 0 0 6 0zM19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button><button class="nav-x" id="navClose" aria-label="Закрыть">&times;</button></div></div>
+  <div class="nav-head"><div class="nav-title grad">Навигация</div><div class="nav-btns"><button class="nav-x" id="boostBtn" aria-label="Ускорить анимации"><svg viewBox="0 0 24 24" class="fill"><path d="M13.2 2.2 4.6 13.4a.7.7 0 0 0 .55 1.13H10l-1 6.9a.5.5 0 0 0 .9.36l8.5-11.2a.7.7 0 0 0-.55-1.13H13.2l.9-6.9a.5.5 0 0 0-.9-.36z"/></svg></button><button class="nav-x" id="setBtn" aria-label="Настройки"><svg viewBox="0 0 24 24" class="fill"><path fill-rule="evenodd" d="M15 12a3 3 0 1 0-6 0 3 3 0 0 0 6 0zM19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button><button class="nav-x" id="navClose" aria-label="Закрыть">&times;</button></div></div>
   <nav class="nav-list">
     <button class="n-item" data-goto="home"><span class="lb grad">Ссылка</span></button>
     <button class="n-item" id="contractToggle"><span class="lb grad">Договор для модераторов</span><span class="arr"><svg viewBox="0 0 24 24"><path d="M6 15 L12 9 L18 15"/></svg></span></button>
@@ -392,6 +412,13 @@ html[data-mode=light] .card::after{background:radial-gradient(90% 60% at 0% 0%,r
   </div>
 </div>
 
+<div class="mo" id="pm">
+  <div class="modal">
+    <div class="al-t">Если у вас недостаточно мощное устройство, могут быть лаги. Если нужно, выберите упрощённую «Лайт» версию.</div>
+    <div class="al-b"><button class="al-btn" id="liteBtn">Лайт</button><button class="al-btn al-go" id="fullBtn">Полная</button></div>
+  </div>
+</div>
+
 <script>
 (function(){
 var $=function(s,r){return (r||document).querySelector(s)},$$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
@@ -462,10 +489,15 @@ var intro=$('#intro');
 function start(){
   if(!document.body.classList.contains('intro'))return;
   document.body.classList.remove('intro');document.body.classList.add('entered');
-  intro.classList.add('out');setTimeout(function(){intro.remove();fit()},900);fit();
+  intro.classList.add('out');setTimeout(function(){intro.remove();fit()},900/SP);fit();
 }
-$('#startBtn').addEventListener('click',start);
-document.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' ')&&document.body.classList.contains('intro')){e.preventDefault();start()}});
+var pm=$('#pm');
+function openPerf(){if(!document.body.classList.contains('intro')||pm.classList.contains('show'))return;pm.classList.remove('out');pm.classList.add('show')}
+function choose(lite){if(lite)document.body.classList.add('lite');pm.classList.add('out');setTimeout(function(){pm.classList.remove('show','out')},350/SP);start()}
+$('#startBtn').addEventListener('click',openPerf);
+$('#liteBtn').addEventListener('click',function(){choose(true)});
+$('#fullBtn').addEventListener('click',function(){choose(false)});
+document.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' ')&&document.body.classList.contains('intro')&&!pm.classList.contains('show')){e.preventDefault();openPerf()}});
 
 /* Навигация */
 var body=document.body,blocks=$$('[data-block]'),navItems=$$('.n-item[data-goto],.n-sub a[data-goto]');
@@ -485,7 +517,7 @@ function updateHead(id){
   kicker.innerHTML=k;h1.innerHTML=t;meta.textContent=m;
   [kicker,h1,meta].forEach(function(el){el.classList.remove('reveal');void el.offsetWidth;el.classList.add('reveal')});
 }
-var cur='home',busy=false;
+var cur='home',busy=false,SP=1;
 function showBlock(id,cb){
   if(busy)return;
   var from=$('#'+cur),to=$('#'+id);
@@ -495,7 +527,7 @@ function showBlock(id,cb){
     navItems.forEach(function(el){el.classList.toggle('current',el.getAttribute('data-goto')===id)});
     updateHead(id);window.scrollTo({top:0,behavior:'auto'});if(cb)cb();
   }
-  if(from&&id!==cur&&!matchMedia('(prefers-reduced-motion:reduce)').matches){busy=true;from.classList.add('leaving');setTimeout(go,260)}else go();
+  if(from&&id!==cur&&!matchMedia('(prefers-reduced-motion:reduce)').matches){busy=true;from.classList.add('leaving');setTimeout(go,260/SP)}else go();
 }
 navItems.forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();showBlock(a.getAttribute('data-goto'));setNav(false)})});
 navItems[0].classList.add('current');
@@ -550,7 +582,7 @@ document.addEventListener('fullscreenchange',fsUp);
 /* Модалка */
 var mo=$('#mo');
 function openM(){mo.classList.remove('out');mo.classList.add('show')}
-function closeM(){if(!mo.classList.contains('show'))return;mo.classList.add('out');setTimeout(function(){mo.classList.remove('show','out')},350)}
+function closeM(){if(!mo.classList.contains('show'))return;mo.classList.add('out');setTimeout(function(){mo.classList.remove('show','out')},350/SP)}
 $('#mainBtn').addEventListener('click',openM);
 $('#cancelBtn').addEventListener('click',closeM);
 mo.addEventListener('click',function(e){if(e.target===mo)closeM()});
@@ -572,7 +604,7 @@ document.addEventListener('pointermove',function(e){
 
 /* Размытие при скролле + плавный курсор */
 var lastY=window.scrollY,v=0,page=$('.page');
-(function tick(){
+(function tick(){if(document.body.classList.contains('lite'))return;
   x+=(tx-x)*.14;y+=(ty-y)*.14;spot.style.transform='translate3d('+x+'px,'+y+'px,0)';
   var sy=window.scrollY,dy=Math.abs(sy-lastY);lastY=sy;v+=(dy-v)*.18;
   var b=Math.min(v/16,2.6);page.style.setProperty('--sb',(b<.15?0:b).toFixed(2)+'px');
@@ -589,7 +621,7 @@ s06:['5. Term and termination',['The agreement remains in force until the work e
 s07:['6. Other',['All disputes are resolved through negotiation in Telegram.','Changes to the agreement are made by mutual consent.','The agreement is confirmed by the Moderator’s message “Agreed” in reply to the sent text.']]};
 var ENT=['Information','Subscription channel announcement','Moderation','Requests','Limit refresh','Promo codes','Subscriptions','Messages','Test','Diagnostics','GitHub backup','Lists'];
 var ENCD=['user info','stats for today','all-time stats','top users','list of admins','ban/unban','make anonymous','clear user subscriptions','grant requests','refreshes 24/7 request limits for the chosen type','refreshes requests of all function types','grant','revoke','send a message to the bot chat','test a subscription mode / become a regular user for testing','session status','DB and channel diagnostics','backup channel ID','full restore from Telegram + GitHub','VIP/ANON channel IDs'];
-var ST={'Навигация':'Navigation','Ссылка':'Link','Договор для модераторов':'Moderator agreement','Главная':'Home','1. Обязанности':'1. Duties','2. Порядок работы':'2. Workflow','3. Подробности':'3. Details','4. Вознаграждение':'4. Rewards','5. Срок действия':'5. Term','6. Прочее':'6. Other','Блок 1 · Команды':'Block 1 · Commands','Согласие':'Consent','Официальный доступ':'Official access','Актуальная ссылка':'Current link','Начать':'Start','Нажмите, чтобы войти':'Tap to enter','Открыть':'Open','Настройки':'Settings','Цвет':'Color','Обычный':'Default','Мятный':'Mint','Алый':'Scarlet','Медовый':'Honey','Нежно-голубой':'Soft blue','Вы хотите перейти по ссылке?':'Do you want to follow the link?','Перейти':'Go','Отмена':'Cancel','Язык':'Language','Тема':'Theme','Светлая':'Light','Тёмная':'Dark','Мятная':'Mint','Медовая':'Honey','Алая':'Scarlet','Поиск по договору…':'Search the agreement…','Ничего не найдено':'Nothing found','Соглашение · ':'Agreement · ','Договор · ':'Contract · ','Модератор-тестировщик':'Moderator-tester','Модератор-тестировщик проекта':'Moderator-tester of the project','Модератор-тестировщик проекта TeleOsint':'Moderator-tester of the TeleOsint project','📄 СОГЛАШЕНИЕ О СОТРУДНИЧЕСТВЕ':'📄 COOPERATION AGREEMENT','Выберите раздел в меню слева, чтобы ознакомиться с пунктами соглашения, списком команд и условиями сотрудничества.':'Pick a section in the menu on the left to read the agreement clauses, the command list and the terms of cooperation.','Все модераторы делятся на 2 группы:':'All moderators are split into 2 groups:','Главные модераторы':'Head moderators','Модераторы':'Moderators','Главные модераторы получают 5% от прибыли бота, если он набирает более 1000⭐️ на балансе. Вся прибыль выдаётся округлённо, подарками Telegram/Telegram Payment.':'Head moderators receive 5% of the bot’s profit if it holds more than 1000⭐️ on its balance. All profit is paid out rounded, as Telegram gifts / Telegram Payment.','Список команд, доступных Главным модераторам':'Commands available to head moderators','Список команд, доступных Модераторам':'Commands available to moderators','Все команды вводятся прямо в чат бота через «.».':'All commands are typed directly in the bot chat, starting with “.”.','Об повышении должности владелец скажет сам. Всё, что нужно — просто получить доверие.':'The owner will tell you about a promotion. All you need to do is earn trust.','Становясь модератором любой группы, вы автоматически соглашаетесь на все пункты договора. В случае критических невыполнений вы можете получить предупреждение, получить понижение группы, снятие с должности, внесение в чёрный список бота.':'By becoming a moderator of any group, you automatically agree to all clauses of the agreement. In case of critical failures you may receive a warning, a demotion, removal from the position or be added to the bot’s blacklist.'};
+var ST={'Навигация':'Navigation','Ссылка':'Link','Договор для модераторов':'Moderator agreement','Главная':'Home','1. Обязанности':'1. Duties','2. Порядок работы':'2. Workflow','3. Подробности':'3. Details','4. Вознаграждение':'4. Rewards','5. Срок действия':'5. Term','6. Прочее':'6. Other','Блок 1 · Команды':'Block 1 · Commands','Согласие':'Consent','Официальный доступ':'Official access','Актуальная ссылка':'Current link','Начать':'Start','Нажмите, чтобы войти':'Tap to enter','Открыть':'Open','Настройки':'Settings','Цвет':'Color','Обычный':'Default','Мятный':'Mint','Алый':'Scarlet','Медовый':'Honey','Нежно-голубой':'Soft blue','Вы хотите перейти по ссылке?':'Do you want to follow the link?','Перейти':'Go','Отмена':'Cancel','Лайт':'Lite','Полная':'Full','Если у вас недостаточно мощное устройство, могут быть лаги. Если нужно, выберите упрощённую «Лайт» версию.':'If your device isn’t powerful enough, you may experience lag. If needed, choose the simplified “Lite” version.','Язык':'Language','Тема':'Theme','Светлая':'Light','Тёмная':'Dark','Мятная':'Mint','Медовая':'Honey','Алая':'Scarlet','Поиск по договору…':'Search the agreement…','Ничего не найдено':'Nothing found','Соглашение · ':'Agreement · ','Договор · ':'Contract · ','Модератор-тестировщик':'Moderator-tester','Модератор-тестировщик проекта':'Moderator-tester of the project','Модератор-тестировщик проекта TeleOsint':'Moderator-tester of the TeleOsint project','📄 СОГЛАШЕНИЕ О СОТРУДНИЧЕСТВЕ':'📄 COOPERATION AGREEMENT','Выберите раздел в меню слева, чтобы ознакомиться с пунктами соглашения, списком команд и условиями сотрудничества.':'Pick a section in the menu on the left to read the agreement clauses, the command list and the terms of cooperation.','Все модераторы делятся на 2 группы:':'All moderators are split into 2 groups:','Главные модераторы':'Head moderators','Модераторы':'Moderators','Главные модераторы получают 5% от прибыли бота, если он набирает более 1000⭐️ на балансе. Вся прибыль выдаётся округлённо, подарками Telegram/Telegram Payment.':'Head moderators receive 5% of the bot’s profit if it holds more than 1000⭐️ on its balance. All profit is paid out rounded, as Telegram gifts / Telegram Payment.','Список команд, доступных Главным модераторам':'Commands available to head moderators','Список команд, доступных Модераторам':'Commands available to moderators','Все команды вводятся прямо в чат бота через «.».':'All commands are typed directly in the bot chat, starting with “.”.','Об повышении должности владелец скажет сам. Всё, что нужно — просто получить доверие.':'The owner will tell you about a promotion. All you need to do is earn trust.','Становясь модератором любой группы, вы автоматически соглашаетесь на все пункты договора. В случае критических невыполнений вы можете получить предупреждение, получить понижение группы, снятие с должности, внесение в чёрный список бота.':'By becoming a moderator of any group, you automatically agree to all clauses of the agreement. In case of critical failures you may receive a warning, a demotion, removal from the position or be added to the bot’s blacklist.'};
 for(var kk in ST)D[kk]=ST[kk];
 S.forEach(function(s){var e=EN_S[s[0]];D[s[1]]=e[0];s[2].forEach(function(r,j){D[r[1]]=e[1][j]})});
 var kd=0;C.forEach(function(g,i){D[g[0]]=g[0].split(' ')[0]+' '+ENT[i];g[1].forEach(function(l){var p=l.indexOf(' - ');if(p>=0)D[l.slice(p+3)]=ENCD[kd++]})});
@@ -632,6 +664,16 @@ $$('#accents button').forEach(function(b){b.addEventListener('click',function(){
 var nav=$('#nav'),setBtn=$('#setBtn');
 setBtn.addEventListener('click',function(){var o=nav.classList.toggle('settings');setBtn.classList.toggle('on',o);if(o)moveAll(false)});
 window.addEventListener('resize',function(){moveAll(false)});
+var boostBtn=$('#boostBtn'),boostRaf=0;
+function boostLoop(){document.getAnimations().forEach(function(a){if(a.playbackRate!==SP&&!a.pending)a.updatePlaybackRate(SP)});boostRaf=SP!==1?requestAnimationFrame(boostLoop):0}
+function setBoost(on,save){
+  SP=on?1.6:1;boostBtn.classList.toggle('on',on);
+  if(on){if(!boostRaf)boostRaf=requestAnimationFrame(boostLoop)}
+  else{cancelAnimationFrame(boostRaf);boostRaf=0;document.getAnimations().forEach(function(a){a.updatePlaybackRate(1)})}
+  if(save){try{localStorage.setItem('tos-boost',on?'1':'0')}catch(e){}}
+}
+boostBtn.addEventListener('click',function(){setBoost(SP===1,true)});
+try{if(localStorage.getItem('tos-boost')==='1')setBoost(true,false)}catch(e){}
 try{var sl=localStorage.getItem('tos-lang'),sm=localStorage.getItem('tos-mode'),sa=localStorage.getItem('tos-accent');if(sl==='en')lang='en';if(sm==='light')mode='light';if(['neutral','mint','scarlet','honey','sky'].indexOf(sa)>=0)accent=sa}catch(e){}
 applyTheme(false);setLang(lang);
 })();
